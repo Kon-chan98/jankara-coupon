@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ジャンカラ クーポン割引計算機</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+      color: #1a1a1a;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 1.75rem;
+      color: #1a1a1a;
+      letter-spacing: -0.01em;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+
+    .field-label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .required { color: #e04040; margin-left: 2px; }
+    .optional { font-size: 11px; color: #999; margin-left: 4px; }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .yen {
+      font-size: 17px;
+      color: #999;
+      flex-shrink: 0;
+    }
+
+    input[type="number"] {
+      font-size: 17px;
+      font-family: inherit;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 160px;
+      outline: none;
+      color: #1a1a1a;
+      background: #fafafa;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus { border-color: #555; background: #fff; }
+    input[type="number"].input-error { border-color: #e04040; background: #fff8f8; }
+
+    .unit { font-size: 13px; color: #999; }
+
+    .error-msg {
+      font-size: 12px;
+      color: #e04040;
+      margin-top: 5px;
+      min-height: 16px;
+      display: block;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 1.5rem 0;
+    }
+
+    #results { display: none; }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .result-table tr {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .result-table tr:last-child { border-bottom: none; }
+
+    .result-table td {
+      padding: 11px 4px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .result-table td:last-child {
+      text-align: right;
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .row-total td { color: #888; font-size: 13px; }
+    .row-total td:last-child { font-size: 14px; font-weight: 500; color: #888; }
+
+    .row-main td:first-child { color: #1a1a1a; font-weight: 500; }
+    .row-main td:last-child { color: #1a1a1a; }
+
+    .row-sub td:first-child {
+      color: #555;
+      font-size: 13px;
+      padding-left: 16px;
+    }
+    .row-sub td:last-child { font-size: 15px; color: #333; }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 5px;
+      margin-left: 6px;
+      vertical-align: middle;
+      letter-spacing: 0.02em;
+    }
+    .badge-blue  { background: #e8f0fe; color: #2a5fd4; }
+    .badge-green { background: #e6f4ea; color: #1e7e34; }
+
+    #placeholder {
+      text-align: center;
+      font-size: 13px;
+      color: #bbb;
+      padding: 1.5rem 0 0.5rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #f0f0f0; }
+      .card { background: #252525; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+      h1 { color: #f0f0f0; }
+      .field-label { color: #aaa; }
+      input[type="number"] { background: #2e2e2e; border-color: #444; color: #f0f0f0; }
+      input[type="number"]:focus { border-color: #aaa; background: #333; }
+      input[type="number"].input-error { border-color: #e04040; background: #2e1e1e; }
+      .divider { border-top-color: #333; }
+      .result-table tr { border-bottom-color: #333; }
+      .row-total td { color: #777; }
+      .row-total td:last-child { color: #777; }
+      .row-main td:first-child { color: #f0f0f0; }
+      .row-main td:last-child { color: #f0f0f0; }
+      .row-sub td:first-child { color: #aaa; }
+      .row-sub td:last-child { color: #ddd; }
+      .badge-blue  { background: #1e2d54; color: #7aa6f5; }
+      .badge-green { background: #1a2e1e; color: #5fc47a; }
+      #placeholder { color: #555; }
+      .yen, .unit { color: #666; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>ジャンカラ クーポン割引計算機</h1>
+
+    <div class="field">
+      <label class="field-label" for="price-main">
+        通常料金<span class="required">*</span>
+      </label>
+      <div class="input-row">
+        <span class="yen">¥</span>
+        <input type="number" id="price-main" placeholder="例: 1260" min="1"
+          oninput="onInput()" onblur="validateMain()" />
+        <span class="unit">円</span>
+      </div>
+      <span class="error-msg" id="err-main"></span>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="price-concept">
+        コンセプトルーム料金<span class="optional">（任意）</span>
+      </label>
+      <div class="input-row">
+        <span class="yen">¥</span>
+        <input type="number" id="price-concept" placeholder="例: 300" min="0"
+          oninput="onInput()" />
+        <span class="unit">円</span>
+      </div>
+      <span class="error-msg" id="err-concept"></span>
+    </div>
+
+    <hr class="divider" />
+
+    <div id="results">
+      <table class="result-table">
+        <tr class="row-total">
+          <td>料金合計</td>
+          <td id="val-total"></td>
+        </tr>
+        <tr class="row-main">
+          <td>
+            法人クーポン
+            <span class="badge badge-blue">30% オフ</span>
+          </td>
+          <td id="val-30"></td>
+        </tr>
+        <tr class="row-sub">
+          <td>
+            ＋個人30%オフ併用
+            <span class="badge badge-green">60% オフ</span>
+          </td>
+          <td id="val-60"></td>
+        </tr>
+        <tr class="row-sub">
+          <td>
+            ＋個人50%オフ併用
+            <span class="badge badge-green">80% オフ</span>
+          </td>
+          <td id="val-80"></td>
+        </tr>
+      </table>
+    </div>
+
+    <p id="placeholder">金額を入力すると割引後の料金が表示されます</p>
+  </div>
+
+  <script>
+    function ceilTen(n) { return Math.ceil(n / 10) * 10; }
+    function fmt(n) { return '¥\u2009' + n.toLocaleString('ja-JP') + ' 円'; }
+
+    function validateMain() {
+      const input = document.getElementById('price-main');
+      const err = document.getElementById('err-main');
+      const val = input.value.trim();
+      if (!val) {
+        err.textContent = '通常料金を入力してください';
+        input.classList.add('input-error');
+        return false;
+      }
+      if (parseFloat(val) <= 0) {
+        err.textContent = '0より大きい金額を入力してください';
+        input.classList.add('input-error');
+        return false;
+      }
+      err.textContent = '';
+      input.classList.remove('input-error');
+      return true;
+    }
+
+    function validateConcept() {
+      const input = document.getElementById('price-concept');
+      const err = document.getElementById('err-concept');
+      const val = input.value.trim();
+      if (val !== '' && parseFloat(val) < 0) {
+        err.textContent = '0以上の金額を入力してください';
+        input.classList.add('input-error');
+        return false;
+      }
+      err.textContent = '';
+      input.classList.remove('input-error');
+      return true;
+    }
+
+    function onInput() {
+      validateConcept();
+      const mainVal = document.getElementById('price-main').value.trim();
+      if (mainVal !== '') validateMain();
+
+      const mainRaw = parseFloat(document.getElementById('price-main').value);
+      const conceptRaw = parseFloat(document.getElementById('price-concept').value) || 0;
+
+      const results = document.getElementById('results');
+      const placeholder = document.getElementById('placeholder');
+
+      if (!mainRaw || mainRaw <= 0 || conceptRaw < 0) {
+        results.style.display = 'none';
+        placeholder.style.display = 'block';
+        return;
+      }
+
+      const total = mainRaw + conceptRaw;
+      results.style.display = 'block';
+      placeholder.style.display = 'none';
+
+      document.getElementById('val-total').textContent = fmt(total);
+      document.getElementById('val-30').textContent = fmt(ceilTen(total * 0.70));
+      document.getElementById('val-60').textContent = fmt(ceilTen(total * 0.40));
+      document.getElementById('val-80').textContent = fmt(ceilTen(total * 0.20));
+    }
+  </script>
+</body>
+</html>
